@@ -8,6 +8,7 @@ An Obsidian plugin that renders PlantUML diagrams and is ready for Community Plu
 - Render `.puml` embedded files.
 - Cache include dependency trees and auto re-render when included files are modified.
 - Right-click each rendered diagram to clear cache and re-render only that diagram.
+- Click a rendered diagram to open a large, scrollable fullscreen preview; press `Esc` or click **关闭** to exit.
 - Select rendering mode: remote server endpoint or local PlantUML server.
 - Align rendered diagrams left, center, or right, with optional per-diagram overrides.
 

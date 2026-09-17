@@ -15,6 +15,7 @@ import {
     ButtonComponent,
     MarkdownPostProcessorContext,
     MarkdownRenderChild,
+    Modal,
     Menu,
     Notice,
     Platform,
@@ -1071,6 +1072,26 @@ export default class PlantumlIntegratorPlugin extends Plugin {
 
       menu.showAtMouseEvent(evt);
     });
+
+    container.addEventListener("click", (evt) => {
+      const target = evt.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const svg = target.closest("svg");
+      if (!svg || !container.contains(svg) || target.closest("a")) {
+        return;
+      }
+
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.openFullscreen(svg);
+    });
+  }
+
+  private openFullscreen(svg: SVGElement): void {
+    new PlantumlFullscreenModal(this.app, svg.cloneNode(true) as SVGElement).open();
   }
 
   getLocalServerStartCommand(): string {
@@ -1219,6 +1240,45 @@ export default class PlantumlIntegratorPlugin extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+  }
+}
+
+class PlantumlFullscreenModal extends Modal {
+  private readonly svg: SVGElement;
+
+  constructor(app: App, svg: SVGElement) {
+    super(app);
+    this.svg = svg;
+  }
+
+  onOpen(): void {
+    const { contentEl, modalEl } = this;
+    modalEl.addClass("plantuml-fullscreen-modal");
+    contentEl.empty();
+
+    const toolbar = contentEl.createDiv({ cls: "plantuml-fullscreen-toolbar" });
+    toolbar.createSpan({
+      text: "Plantuml 预览 · 可滚动查看",
+      cls: "plantuml-fullscreen-title"
+    });
+
+    const closeButton = toolbar.createEl("button", {
+      text: "关闭",
+      cls: "plantuml-fullscreen-close"
+    });
+    closeButton.addEventListener("click", () => this.close());
+
+    const viewport = contentEl.createDiv({ cls: "plantuml-fullscreen-viewport" });
+    viewport.appendChild(this.svg);
+    viewport.addEventListener("click", (evt) => {
+      if (evt.target === viewport) {
+        this.close();
+      }
+    });
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
   }
 }
 
